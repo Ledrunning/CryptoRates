@@ -1,5 +1,7 @@
 # WPF Client - Server Cryptocurrency rates
 
+# IMPORTANT! The app is currently being updated to incorporate a new technology stack and new features!
+
 [![.NET](https://github.com/Ledrunning/Cryptocurrency_Rates/actions/workflows/dotnet-desktop.yml/badge.svg)](https://github.com/Ledrunning/Cryptocurrency_Rates/actions/workflows/dotnet-desktop.yml)
 
 
