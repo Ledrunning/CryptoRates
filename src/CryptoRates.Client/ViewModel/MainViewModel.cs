@@ -9,6 +9,7 @@ using System.Windows.Threading;
 using CryptoCurrencyRates.Client.Contracts;
 using CryptoCurrencyRates.Client.Model;
 using CryptoCurrencyRates.Client.ViewModel.Commands;
+using CryptoRates.Client;
 
 namespace CryptoCurrencyRates.Client.ViewModel;
 
