@@ -1,42 +1,55 @@
-# WPF Client - Server Cryptocurrency rates
+# CryptoRates
 
-# IMPORTANT! The app is currently being updated to incorporate a new technology stack and new features!
+**Work in progress.** The gateway and the WPF client already work; tests, Docker, CI and the web client are still on the way.
 
-[![.NET](https://github.com/Ledrunning/Cryptocurrency_Rates/actions/workflows/dotnet-desktop.yml/badge.svg)](https://github.com/Ledrunning/Cryptocurrency_Rates/actions/workflows/dotnet-desktop.yml)
+A small real-time crypto price dashboard: one gateway talks to the market data provider, clients only talk to the gateway.
+
+CoinGecko ──► Gateway (ASP.NET Core) ──► WPF client
+│ REST + SignalR └──► Vue web client (planned)
 
 
-The project demonstrates getting and updating cryptocurrency exchange rates getting data about running Windows services and showing names of services:
+## What it does
 
-- Actual cryptocurrency rates from https://coincap.io/
+- Polls CoinGecko `/coins/markets` and keeps the top 250 coins by market cap, plus any extra coins you pin in the config
+- Caches the latest snapshot, so clients never hit the external API
+- Serves it over REST (`GET /api/v1/rates`, `GET /api/v1/rates/{id}`) and pushes updates over SignalR (`/hubs/rates`, event `RatesUpdated`)
+- WPF client with live updates, search and a Material Design dark theme
 
-- Windows services that are currently running
+## Tech stack
 
-The program is written in C# language on .NET 6 in Visual Studio Enterprise 2022
-- The project included server-side microservice **CryptocurrencyRates.Gateway** for getting rates from coincap API
-- Service library for concap API **CryptocurrencyRates.Services**
-- Common library for further app extension **CryptocurrencyRates.Common**
-- WPF desktop application **CryptoCurrencyRates.Client**
+- **Gateway:** .NET 10, ASP.NET Core minimal API, SignalR, `BackgroundService` + `PeriodicTimer`, `HttpClient` with the standard resilience handler, OpenAPI + Scalar (Development only)
+- **Desktop client:** WPF, MVVM, SignalR client, `System.Text.Json`, MaterialDesignInXamlToolkit
+- **Web client (planned):** Vue 3, Vite, TypeScript
+- **Planned:** xUnit tests, Docker, GitHub Actions
 
-In development mode in gateway microservice, it can use Swagger UI for server-side test app and coincap API. 
-The logging is available in **CryptocurrencyRates.Gateway** and write into a file. 
-You be able to find it in **CryptocurrencyRates.Gateway** bin folder called Logs
+## Running locally
 
-Programm setup:
-- CryptocurrencyRates.Gateway: use appsettings.json and the next section
+Requirements: .NET 10 SDK (the WPF client needs Windows).
+
+```bash
+dotnet dev-certs https --trust
+
+# optional but recommended: a free CoinGecko Demo API key
+dotnet user-secrets set "Rates:ApiKey" "<your key>" --project src/CryptoRates.Gateway
+
+dotnet run --project src/CryptoRates.Gateway   # https://localhost:7208, API docs at /scalar
+dotnet run --project src/CryptoRates.Client    # WPF client, press Start
 ```
-"ConcapApi": {
-    "BaseUrl": "https://api.coincap.io/v2/rates",
-    "Timeout":  -1 
-  }
-```
-  
-- CryptoCurrencyRates.The client uses appsettings.json and the next section to change the host IP address for CryptocurrencyRates.Gateway
-```
-"CryptocurrencyRatesGateway": {
-    "GatewayUrl": "https://localhost:7208/api/CryptoCurrency/GetCurrentRates"
-  }
-```
-  
-  ## UI Layouts
-  
-  ![](currencyRates.gif)
+
+The poll interval defaults to 10 minutes to stay inside the free Demo quota (10,000 calls per month). The gateway validates this on startup and refuses a configuration that would exceed it.
+
+## Roadmap
+
+- [ ] Unit and integration tests
+- [ ] Dockerfile and docker-compose for the gateway
+- [ ] GitHub Actions CI
+- [ ] Vue 3 web client
+- [ ] Screenshots / GIFs
+
+## Credits
+
+Market data by [CoinGecko](https://www.coingecko.com).
+
+## License
+
+TBD
