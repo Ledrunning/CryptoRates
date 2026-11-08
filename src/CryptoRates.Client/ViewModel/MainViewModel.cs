@@ -1,144 +1,187 @@
-﻿using System;
+﻿using CryptoCurrencyRates.Client.ViewModel.Commands;
+using CryptoRates.Client.Contracts;
+using CryptoRates.Client.Model;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ServiceProcess;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
+using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Threading;
-using CryptoCurrencyRates.Client.Contracts;
-using CryptoCurrencyRates.Client.Model;
-using CryptoCurrencyRates.Client.ViewModel.Commands;
-using CryptoRates.Client;
 
-namespace CryptoCurrencyRates.Client.ViewModel;
+namespace CryptoRates.Client.ViewModel;
 
-internal class MainViewModel : BaseViewModel
+public sealed class MainViewModel : BaseViewModel
 {
-    private static bool isOn;
-    private readonly ICryptoCurrencyRatesService cryptoCurrencyRatesService;
-    //NOTICE! I prefer to put such values to settings file, but in this context
-    //I used readonly field because there is no need for a current test task I guess
-    private readonly TimeSpan updateGridIntervalInMs = TimeSpan.Parse(ApplicationResource.UpdateInterval);
-    private string? buttonText;
-    private CancellationTokenSource cancelTokenSource;
+    private readonly Dispatcher dispatcher = Dispatcher.CurrentDispatcher; // the VM is created on the UI thread
+    private readonly IRatesStream stream;
 
-    private ObservableCollection<CurrencyRateModel>? cryptoCurrencyCollection = new();
-    private CancellationToken token;
+    private string buttonText = ApplicationResource.Start;
+    private CancellationTokenSource? cts;
 
-    public MainViewModel(ICryptoCurrencyRatesService cryptoCurrencyRatesService)
+    private bool isRunning;
+
+    public bool IsRunning
     {
-        this.cryptoCurrencyRatesService = cryptoCurrencyRatesService;
-        InitializeCommands();
-        GetWindowsServices();
+        get => isRunning;
+        private set => SetField(ref isRunning, value);
     }
 
-    public ObservableCollection<CurrencyRateModel>? CryptoCurrencyCollection
+    private string searchText = string.Empty;
+
+    public ICollectionView CryptoCurrencyView { get; }
+
+    public string SearchText
     {
-        get => cryptoCurrencyCollection;
+        get => searchText;
         set
         {
-            cryptoCurrencyCollection = value;
-            OnPropertyChanged(nameof(CryptoCurrencyCollection));
+            if (searchText == value) return;
+            searchText = value;
+            OnPropertyChanged();
+            CryptoCurrencyView.Refresh();
         }
     }
+
+    private bool Matches(object item) =>
+        item is CurrencyRateModel c &&
+        (string.IsNullOrWhiteSpace(searchText) ||
+         c.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+         c.Symbol.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+
+    private DateTimeOffset? lastUpdate;
+    private string status = "Stopped";
+
+    public MainViewModel(IRatesStream stream)
+    {
+        this.stream = stream;
+        CryptoCurrencyView = CollectionViewSource.GetDefaultView(CryptoCurrencyCollection);
+        CryptoCurrencyView.Filter = Matches;
+        stream.SnapshotReceived += OnSnapshotReceived;
+        stream.StateChanged += OnStateChanged;
+
+        // ToggleAsync catches everything, so nothing is lost in the discarded task.
+        StartServiceCommand = new RelayCommand(() => _ = ToggleAsync());
+    }
+
+    public ObservableCollection<CurrencyRateModel> CryptoCurrencyCollection { get; } = new();
+
+    public ICommand StartServiceCommand { get; }
 
     public string ButtonText
     {
-        get { return buttonText ??= ApplicationResource.Start; }
-        set
-        {
-            buttonText = value;
-            OnPropertyChanged(nameof(ButtonText));
-        }
+        get => buttonText;
+        private set => SetField(ref buttonText, value);
     }
 
-    public ICommand? StartServiceCommand { get; private set; }
-
-    public ObservableCollection<string> ServiceNames { get; set; } = new();
-
-    private void StartRequest()
+    public string Status
     {
-        cancelTokenSource = new CancellationTokenSource();
-        token = cancelTokenSource.Token;
+        get => status;
+        private set => SetField(ref status, value);
     }
 
-    private void StopRequest()
+    public DateTimeOffset? LastUpdate
     {
-        cancelTokenSource.Cancel();
-        cancelTokenSource.Dispose();
+        get => lastUpdate;
+        private set => SetField(ref lastUpdate, value);
     }
 
-    public async void StartServiceExecute()
-    {
-        ButtonText = isOn ? ApplicationResource.Start : ApplicationResource.Stop;
-        isOn = !isOn;
-
-        if (isOn)
-        {
-            StartRequest();
-        }
-        else
-        {
-            StopRequest();
-        }
-
-        await Dispatcher.CurrentDispatcher.Invoke(async () => { await FetchData(); });
-    }
-
-    private async Task FetchData()
-    {
-        while (!token.IsCancellationRequested)
-        {
-            try
-            {
-                //NOTICE! For current context I didn't use created token in Start() method
-                //If someone needed to handle operation canceled error token is the must!
-                var model = await cryptoCurrencyRatesService.GetAllCryptoCurrencyRatesAsync(CancellationToken.None);
-                CryptoCurrencyCollection?.Clear();
-
-                if (model != null)
-                {
-                    foreach (var currency in model)
-                    {
-                        CryptoCurrencyCollection?.Add(currency);
-                    }
-                }
-
-                await Task.Delay(updateGridIntervalInMs, CancellationToken.None);
-            }
-            catch (Exception e)
-            {
-                ShowMessage($"{e}");
-            }
-        }
-    }
-
-    private void InitializeCommands()
-    {
-        StartServiceCommand = new RelayCommand(StartServiceExecute);
-    }
-
-    private void GetWindowsServices()
+    private async Task ToggleAsync()
     {
         try
         {
-            var services = ServiceController.GetServices();
-            foreach (var service in services)
+            if (IsRunning)
             {
-                ServiceNames.Add(service.DisplayName);
+                await StopAsync();
+            }
+            else
+            {
+                await StartAsync();
             }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            ShowMessage($"{e}");
+            Status = $"Error: {ex.Message}"; // shown in the status line, not in a MessageBox loop
         }
     }
 
-    private static void ShowMessage(string errorMessage, MessageBoxButton
-        button = MessageBoxButton.OK, MessageBoxImage icon = MessageBoxImage.Error)
+    private async Task StartAsync()
     {
-        MessageBox.Show(errorMessage, ApplicationResource.ApplicationName,
-            button, icon);
+        IsRunning = true;
+        ButtonText = ApplicationResource.Stop;
+        cts = new CancellationTokenSource();
+
+        try
+        {
+            await stream.StartAsync(cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // Stop was pressed while the client was still connecting.
+        }
+    }
+
+    private async Task StopAsync()
+    {
+        IsRunning = false;
+        ButtonText = ApplicationResource.Start;
+
+        cts?.Cancel();
+        cts?.Dispose();
+        cts = null;
+
+        await stream.StopAsync();
+        Status = "Stopped";
+    }
+
+    // SignalR events arrive on a background thread, the UI collection must be touched on the UI thread.
+    private void OnSnapshotReceived(RatesSnapshotModel snapshot) =>
+        dispatcher.InvokeAsync(() =>
+        {
+            Apply(snapshot.Rates);
+            LastUpdate = snapshot.FetchedAt.ToLocalTime();
+        });
+
+    private void OnStateChanged(StreamState state) =>
+        dispatcher.InvokeAsync(() => Status = state switch
+        {
+            StreamState.Connecting => "Connecting to the gateway...",
+            StreamState.Reconnecting => "Connection lost, reconnecting...",
+            _ => "Connected"
+        });
+
+    /// <summary>Updates rows in place so the DataGrid does not flicker or lose the selection.</summary>
+    private void Apply(IReadOnlyList<CurrencyRateModel> incoming)
+    {
+        ArgumentNullException.ThrowIfNull(incoming);
+
+        var existing = CryptoCurrencyCollection.ToDictionary(r => r.Id);
+        var incomingIds = incoming.Select(r => r.Id).ToHashSet();
+
+        foreach (var gone in CryptoCurrencyCollection.Where(r => !incomingIds.Contains(r.Id)).ToList())
+        {
+            CryptoCurrencyCollection.Remove(gone);
+        }
+
+        for (var i = 0; i < incoming.Count; i++)
+        {
+            var item = incoming[i];
+            if (existing.TryGetValue(item.Id, out var row))
+            {
+                row.UpdateFrom(item);
+                var current = CryptoCurrencyCollection.IndexOf(row);
+                if (current != i)
+                {
+                    CryptoCurrencyCollection.Move(current, i); // keeps the market-cap order
+                }
+            }
+            else
+            {
+                CryptoCurrencyCollection.Insert(i, item);
+            }
+        }
     }
 }

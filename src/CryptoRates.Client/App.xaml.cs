@@ -1,17 +1,20 @@
-﻿using System;
-using System.IO;
-using System.Text;
-using System.Windows;
+﻿using CryptocurrencyRates.Common.Exceptions;
 using CryptoCurrencyRates.Client.Configuration;
 using CryptoCurrencyRates.Client.Contracts;
-using CryptoCurrencyRates.Client.Services.Rest;
-using CryptoCurrencyRates.Client.View;
-using CryptoCurrencyRates.Client.ViewModel;
-using CryptocurrencyRates.Common.Exceptions;
+using CryptoRates.Client.Contracts;
+using CryptoRates.Client.Services.Hub;
+using CryptoRates.Client.Services.Rest;
+using CryptoRates.Client.View;
+using CryptoRates.Client.ViewModel;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
 
-namespace CryptoCurrencyRates.Client;
+namespace CryptoRates.Client;
 
 /// <summary>
 ///     Interaction logic for App.xaml
@@ -39,21 +42,39 @@ public partial class App : Application
 
     private void ConfigureServices(IServiceCollection services)
     {
-        var gatewaySettings = Configuration?.GetSection(GatewaySettings.SectionName).Get<GatewaySettings>();
+        var gatewayUrl = Configuration?.GetSection(GatewaySettings.SectionName).Get<GatewaySettings>()?.GatewayUrl;
 
-        services.AddTransient<ICryptoCurrencyRatesService>(x =>
+        if (!Uri.TryCreate(gatewayUrl, UriKind.Absolute, out var gatewayUri))
         {
-            if (gatewaySettings is { GatewayUrl: { } })
-            {
-                return new CryptoCurrencyRatesService(gatewaySettings.GatewayUrl);
-            }
+            throw new CryptoCurrencyRatesException("Error to reading gateway settings: GatewayUrl is missing or invalid.");
+        }
 
-            throw new CryptoCurrencyRatesException("Error to reading gateway settings!");
+        var settings = Configuration?.GetSection(GatewaySettings.SectionName).Get<GatewaySettings>();
+
+        if (!Uri.TryCreate(settings?.HubUrl, UriKind.Absolute, out var hubUri))
+        {
+            throw new CryptoCurrencyRatesException("Error to reading gateway settings: HubUrl is missing or invalid.");
+        }
+
+        services.AddSingleton<IRatesStream>(_ => new RatesHubClient(hubUri));
+
+        services.AddHttpClient<ICryptoCurrencyRatesService, CryptoCurrencyRatesService>(client =>
+        {
+            client.BaseAddress = gatewayUri;
+            client.Timeout = TimeSpan.FromSeconds(15);
         });
-        // Register all ViewModels.
-        services.AddSingleton<MainViewModel>();
 
-        // Register all the Windows of the applications.
-        services.AddScoped<MainWindow>(_ => new() {DataContext = _.GetService<MainViewModel>()});
+        services.AddSingleton<MainViewModel>();
+        services.AddSingleton(sp => new MainWindow { DataContext = sp.GetRequiredService<MainViewModel>() });
+    }
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        if (ServiceProvider is IAsyncDisposable disposable)
+        {
+            Task.Run(() => disposable.DisposeAsync().AsTask()).GetAwaiter().GetResult();
+        }
+
+        base.OnExit(e);
     }
 }

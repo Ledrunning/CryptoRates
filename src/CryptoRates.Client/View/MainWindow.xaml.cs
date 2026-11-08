@@ -1,7 +1,6 @@
 ﻿using System.Windows;
-using CryptoCurrencyRates.Client.Contracts;
 
-namespace CryptoCurrencyRates.Client.View;
+namespace CryptoRates.Client.View;
 
 /// <summary>
 ///     Interaction logic for MainWindow.xaml

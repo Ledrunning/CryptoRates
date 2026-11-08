@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace CryptoCurrencyRates.Client.ViewModel;
+namespace CryptoRates.Client.ViewModel;
 
 public class BaseViewModel : INotifyPropertyChanged
 {

@@ -1,48 +1,125 @@
-﻿<Window x:Class="CryptoCurrencyRates.Client.View.MainWindow"
+﻿<Window x:Class="CryptoRates.Client.View.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:viewModel="clr-namespace:CryptoCurrencyRates.Client.ViewModel"
+        xmlns:viewModel="clr-namespace:CryptoRates.Client.ViewModel"
         mc:Ignorable="d"
-        Title="Crypto currency Rates" Height="500" Width="650"
-        MinHeight="400" MinWidth="500" MaxHeight="600" MaxWidth="800">
+        d:DataContext="{d:DesignInstance Type=viewModel:MainViewModel}"
+        Title="Crypto Rates" Width="820" Height="640" MinWidth="560" MinHeight="420"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource MaterialDesignPaper}"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontSize="14">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="33*"/>
-            <ColumnDefinition Width="32*"/>
-        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="350"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Grid.ColumnSpan="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="80"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid Grid.Row="0" Height="50">
+        <!-- Header -->
+        <materialDesign:ColorZone Grid.Row="0" Mode="PrimaryDark" Padding="24,16"
+                                  materialDesign:ElevationAssist.Elevation="Dp4">
+            <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Label Grid.Column="0" Content="Cryptocurrency rates" FontSize="24" VerticalAlignment="Center" />
-                <Button Style="{DynamicResource RoundedButton}" Grid.Column="1" Height="50" Width="150"
-                        Content="{Binding ButtonText}" Command="{Binding StartServiceCommand}" />
+
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Crypto Rates" FontSize="24" FontWeight="Medium" />
+                    <TextBlock Text="{Binding Status}" Opacity="0.75" Margin="0,2,0,0" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock VerticalAlignment="Center" Opacity="0.75" Margin="0,0,20,0">
+                        <Run Text="Updated " />
+                        <Run Text="{Binding LastUpdate, Mode=OneWay, StringFormat={}{0:HH:mm:ss}, TargetNullValue='—'}" />
+                    </TextBlock>
+
+                    <Button Style="{StaticResource MaterialDesignRaisedSecondaryButton}"
+                            Command="{Binding StartServiceCommand}"
+                            Height="40" MinWidth="130"
+                            materialDesign:ButtonAssist.CornerRadius="20">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Width="20" Height="20" VerticalAlignment="Center">
+                                <materialDesign:PackIcon.Style>
+                                    <Style TargetType="materialDesign:PackIcon">
+                                        <Setter Property="Kind" Value="Play" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsRunning}" Value="True">
+                                                <Setter Property="Kind" Value="Stop" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </materialDesign:PackIcon.Style>
+                            </materialDesign:PackIcon>
+                            <TextBlock Text="{Binding ButtonText}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
             </Grid>
-            <Grid Grid.Row="1">
-                <DataGrid x:Name="CryptoCurrencyData" AutoGenerateColumns="false"
-                          ItemsSource="{Binding CryptoCurrencyCollection, UpdateSourceTrigger=PropertyChanged}">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Currency name" Width="*" Binding="{Binding Id}"/>
-                        <DataGridTextColumn Header="Price in USD" Width="*" Binding="{Binding RateUsd}"/>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Grid>
+        </materialDesign:ColorZone>
+
+        <!-- Search + counter -->
+        <Grid Grid.Row="1" Margin="24,20,24,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBox Width="360" HorizontalAlignment="Left"
+                     Style="{StaticResource MaterialDesignOutlinedTextBox}"
+                     materialDesign:HintAssist.Hint="Search by name or symbol"
+                     materialDesign:TextFieldAssist.HasClearButton="True"
+                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" />
+
+            <TextBlock Grid.Column="1" VerticalAlignment="Center" Opacity="0.6"
+                       Text="{Binding CryptoCurrencyCollection.Count, StringFormat='{}{0} coins'}" />
         </Grid>
-        <Grid Grid.Row="1" Grid.ColumnSpan="2" Grid.Column="0">
-            <ListBox ItemsSource="{Binding ServiceNames}" />
-        </Grid>
+
+        <!-- Rates table -->
+        <materialDesign:Card Grid.Row="2" Margin="24,8,24,24" UniformCornerRadius="12">
+            <DataGrid ItemsSource="{Binding CryptoCurrencyView}"
+                      Style="{StaticResource MaterialDesignDataGrid}"
+                      AutoGenerateColumns="False" IsReadOnly="True"
+                      CanUserAddRows="False" CanUserDeleteRows="False"
+                      HeadersVisibility="Column" SelectionMode="Single"
+                      BorderThickness="0" EnableRowVirtualization="True"
+                      materialDesign:DataGridAssist.CellPadding="16,10"
+                      materialDesign:DataGridAssist.ColumnHeaderPadding="16,10">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="#" Width="70" Binding="{Binding Rank}" />
+
+                    <DataGridTemplateColumn Header="Coin" Width="*" SortMemberPath="Name">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Name}" FontWeight="Medium" />
+                                    <TextBlock Text="{Binding Symbol}" Margin="8,0,0,0" Opacity="0.55" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="Price (USD)" Width="180"
+                                        Binding="{Binding RateUsd, StringFormat={}{0:$#\,##0.00######}}">
+                        <DataGridTextColumn.HeaderStyle>
+                            <Style TargetType="DataGridColumnHeader"
+                                   BasedOn="{StaticResource MaterialDesignDataGridColumnHeader}">
+                                <Setter Property="HorizontalContentAlignment" Value="Right" />
+                            </Style>
+                        </DataGridTextColumn.HeaderStyle>
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="HorizontalAlignment" Value="Right" />
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </materialDesign:Card>
     </Grid>
 </Window>

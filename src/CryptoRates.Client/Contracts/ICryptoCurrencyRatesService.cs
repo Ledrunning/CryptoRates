@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using CryptoRates.Client.Model;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using CryptoCurrencyRates.Client.Model;
 
 namespace CryptoCurrencyRates.Client.Contracts;
 

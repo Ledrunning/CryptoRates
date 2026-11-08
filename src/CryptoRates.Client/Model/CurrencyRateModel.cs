@@ -1,15 +1,42 @@
-﻿namespace CryptoCurrencyRates.Client.Model;
-public class CurrencyRateModel
+using CryptoRates.Client.ViewModel;
+using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+
+namespace CryptoRates.Client.Model;
+
+/// <summary>
+///     One rate as returned by the new gateway (GET /api/v1/rates).
+///     <see cref="RateUsd" /> keeps its old name so the existing DataGrid binding keeps working.
+/// </summary>
+public sealed class CurrencyRateModel : BaseViewModel
 {
-    public string? Id { get; set; }
-    public string? Symbol { get; set; }
-    public string? CurrencySymbol { get; set; }
-    public string? Type { get; set; }
-    public string? RateUsd { get; set; }
+    private string name = string.Empty;
+    private int? rank;
+    private decimal rateUsd;
+    private DateTimeOffset updatedAt;
+
+    [JsonPropertyName("id")] public string Id { get; init; } = string.Empty;
+    [JsonPropertyName("symbol")] public string Symbol { get; init; } = string.Empty;
+    [JsonPropertyName("name")] public string Name { get => name; set => SetField(ref name, value); }
+    [JsonPropertyName("rank")] public int? Rank { get => rank; set => SetField(ref rank, value); }
+    [JsonPropertyName("priceUsd")] public decimal RateUsd { get => rateUsd; set => SetField(ref rateUsd, value); }
+    [JsonPropertyName("updatedAt")] public DateTimeOffset UpdatedAt { get => updatedAt; set => SetField(ref updatedAt, value); }
+
+    public void UpdateFrom(CurrencyRateModel other)
+    {
+        Name = other.Name;
+        Rank = other.Rank;
+        RateUsd = other.RateUsd;
+        UpdatedAt = other.UpdatedAt;
+    }
 }
 
-public class CurrencyRates
+/// <summary>
+///     Response of GET /api/v1/rates.
+/// </summary>
+public sealed class RatesSnapshotModel
 {
-    public CurrencyRateModel? Data { get; set; }
-    public long? Timestamp { get; set; }
+    [JsonPropertyName("rates")] public List<CurrencyRateModel> Rates { get; set; } = [];
+    [JsonPropertyName("fetchedAt")] public DateTimeOffset FetchedAt { get; set; }
 }

@@ -9,6 +9,10 @@ public class CryptoCurrencyRatesException : Exception
     {
     }
 
+    public CryptoCurrencyRatesException(string message, Exception ex) : base(message, ex)
+    {
+    }
+
     public CryptoCurrencyRatesException(string message, string? errorCode, string? errorMessage) : base(message)
     {
         this.errorCode = errorCode;
