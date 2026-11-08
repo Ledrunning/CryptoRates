@@ -1,14 +1,14 @@
-using CryptocurrencyRates.Gateway.Configuration;
-using CryptocurrencyRates.Gateway.Health;
-using CryptocurrencyRates.Gateway.Hubs;
 using CryptocurrencyRates.Gateway.Services;
 using CryptocurrencyRates.Services.Configuration;
 using CryptocurrencyRates.Services.Contracts;
 using CryptocurrencyRates.Services.Providers;
 using CryptocurrencyRates.Services.Services;
+using CryptoRates.Gateway.Health;
+using CryptoRates.Gateway.Hubs;
+using CryptoRates.Services.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace CryptocurrencyRates.Gateway.Extensions;
+namespace CryptoRates.Gateway.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
@@ -27,7 +27,7 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient<IRatesProvider, CoinGeckoRatesProvider>((serviceProvider, client) =>
             {
                 var settings = serviceProvider.GetRequiredService<IOptions<RatesOptions>>().Value;
-                client.BaseAddress = WithTrailingSlash(settings.BaseUrl);
+                client.BaseAddress = new Uri(settings.BaseUrl);
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("CryptocurrencyRates.Gateway/1.0");
             })
             .AddStandardResilienceHandler();

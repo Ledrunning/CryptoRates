@@ -1,6 +1,6 @@
-﻿using CryptocurrencyRates.Gateway.Helpers;
+﻿using CryptoRates.Gateway.Helpers;
 
-namespace CryptocurrencyRates.Gateway.Endpoints
+namespace CryptoRates.Gateway.Endpoints
 {
     public static class VersionEndpoints
     {

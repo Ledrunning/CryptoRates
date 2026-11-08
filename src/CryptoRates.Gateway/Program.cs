@@ -1,6 +1,6 @@
-using CryptocurrencyRates.Gateway.Endpoints;
-using CryptocurrencyRates.Gateway.Extensions;
-using CryptocurrencyRates.Gateway.Hubs;
+using CryptoRates.Gateway.DependencyInjection;
+using CryptoRates.Gateway.Endpoints;
+using CryptoRates.Gateway.Hubs;
 
 const string WebCorsPolicy = "Web";
 

@@ -1,10 +1,10 @@
-﻿using CryptocurrencyRates.Gateway.Helpers;
+﻿using CryptoRates.Gateway.Helpers;
 using NLog;
 using Scalar.AspNetCore;
 
-namespace CryptocurrencyRates.Gateway.Extensions;
+namespace CryptoRates.Gateway.DependencyInjection;
 
-static class ServiceRegisterExtension
+internal static class ServiceRegisterExtension
 {
     public static void RegisterApplicationLifetimeDelegates(this IHostApplicationLifetime hostApplicationLifetime,
         Logger logger)

@@ -2,7 +2,7 @@ using CryptocurrencyRates.Gateway.Models;
 using CryptocurrencyRates.Services.Contracts;
 using Microsoft.AspNetCore.SignalR;
 
-namespace CryptocurrencyRates.Gateway.Hubs;
+namespace CryptoRates.Gateway.Hubs;
 
 public sealed class SignalRRatesNotifier(IHubContext<RatesHub> hubContext) : IRatesNotifier
 {

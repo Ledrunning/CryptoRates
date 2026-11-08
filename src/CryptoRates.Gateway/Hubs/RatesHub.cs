@@ -1,7 +1,7 @@
 using CryptocurrencyRates.Services.Services;
 using Microsoft.AspNetCore.SignalR;
 
-namespace CryptocurrencyRates.Gateway.Hubs;
+namespace CryptoRates.Gateway.Hubs;
 
 /// <summary>
 ///     SignalR hub at <c>/hubs/rates</c>. Clients listen for the "RatesUpdated" message.

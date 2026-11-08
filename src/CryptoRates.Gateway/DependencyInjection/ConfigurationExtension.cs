@@ -1,11 +1,11 @@
-﻿using NLog.Web;
-using NLog;
+﻿using NLog;
+using NLog.Web;
 using System.Diagnostics;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
-namespace CryptocurrencyRates.Gateway.Extensions;
+namespace CryptoRates.Gateway.DependencyInjection;
 
-static class ConfigurationExtension
+internal static class ConfigurationExtension
 {
     public static void ConfigureLogging(this WebApplicationBuilder builder)
     {

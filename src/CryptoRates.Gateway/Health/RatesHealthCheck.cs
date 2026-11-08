@@ -3,7 +3,7 @@ using CryptocurrencyRates.Services.Services;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
-namespace CryptocurrencyRates.Gateway.Health;
+namespace CryptoRates.Gateway.Health;
 
 /// <summary>
 ///     Unhealthy until the first successful poll, degraded when data is older than three poll intervals.

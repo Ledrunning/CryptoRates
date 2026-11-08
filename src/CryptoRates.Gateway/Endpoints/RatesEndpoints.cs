@@ -3,7 +3,7 @@ using CryptocurrencyRates.Services.Models;
 using CryptocurrencyRates.Services.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-namespace CryptocurrencyRates.Gateway.Endpoints
+namespace CryptoRates.Gateway.Endpoints
 {
     public static class RatesEndpoints
     {

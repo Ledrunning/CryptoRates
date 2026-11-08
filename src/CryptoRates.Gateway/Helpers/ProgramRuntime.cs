@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Reflection;
 
-namespace CryptocurrencyRates.Gateway.Helpers;
+namespace CryptoRates.Gateway.Helpers;
 
 internal static class ProgramRuntime
 {

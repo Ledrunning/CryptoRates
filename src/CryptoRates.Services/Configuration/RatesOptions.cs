@@ -3,28 +3,20 @@ namespace CryptocurrencyRates.Services.Configuration;
 public sealed class RatesOptions
 {
     public const string SectionName = "Rates";
+    public const int PageSize = 250;      // максимальное значение per_page в каталоге /coins/markets
+    public const int MaxPinned = 50;      // limit on the number of IDs per request
 
-    /// <summary>Base URL of the rates API. Must be absolute.</summary>
-    public Uri BaseUrl { get; set; } = new("https://api.coingecko.com/api/v3/");
-
-    /// <summary>Optional API key. Keep it out of git: use user-secrets or environment variables.</summary>
+    public string BaseUrl { get; set; } = "https://api.coingecko.com/api/v3/";
+    public TimeSpan PollInterval { get; set; } = TimeSpan.FromMinutes(10);
     public string? ApiKey { get; set; }
 
-    /// <summary>
-    ///     How often the gateway asks the provider for fresh rates.
-    ///     Mind the provider's monthly quota: 5 minutes is about 8,600 calls per month.
-    /// </summary>
-    public TimeSpan PollInterval { get; set; } = TimeSpan.FromMinutes(5);
+    public int MaxCoins { get; set; } = 250;
+    public List<string> PinnedCoins { get; set; } = [];
+    public TimeSpan PageDelay { get; set; } = TimeSpan.FromSeconds(2.5); // < 30 requests per minute
+    public int MonthlyCallBudget { get; set; } = 10_000;
 
-    /// <summary>Coins to track.</summary>
-    public List<CoinOption> Coins { get; set; } = [];
-}
+    public int PageCount => (MaxCoins + PageSize - 1) / PageSize;
 
-public sealed class CoinOption
-{
-    /// <summary>Provider's coin id, e.g. "bitcoin".</summary>
-    public string Id { get; set; } = string.Empty;
-
-    /// <summary>Ticker symbol shown to clients, e.g. "BTC".</summary>
-    public string Symbol { get; set; } = string.Empty;
+    /// <summary>Worst case: every page plus one request for the pinned coins that are outside the top.</summary>
+    public int MaxCallsPerPoll => PageCount + (PinnedCoins.Count > 0 ? 1 : 0);
 }
