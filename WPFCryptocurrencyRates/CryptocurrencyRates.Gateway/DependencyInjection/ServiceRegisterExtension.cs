@@ -1,5 +1,6 @@
 ﻿using CryptocurrencyRates.Gateway.Helpers;
 using NLog;
+using Scalar.AspNetCore;
 
 namespace CryptocurrencyRates.Gateway.Extensions;
 
@@ -23,15 +24,17 @@ static class ServiceRegisterExtension
         });
     }
 
-    public static void RegisterSwagger(this WebApplication app)
+    public static void RegisterScalar(this WebApplication app)
     {
         if (app.Environment.IsDevelopment())
         {
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
+            app.MapOpenApi(); // OpenAPI document at /openapi/v1.json
+
+            app.MapScalarApiReference(options =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", $"{ProgramRuntime.ProgramVersion}");
-                c.RoutePrefix = string.Empty;
+                options.WithTitle("Cryptocurrency Rates Gateway")
+                       .WithTheme(ScalarTheme.Moon)
+                       .ForceDarkMode();
             });
         }
     }

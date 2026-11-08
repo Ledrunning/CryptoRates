@@ -1,4 +1,4 @@
-﻿namespace CryptocurrencyRates.Gateway.Configuration;
+﻿namespace CryptocurrencyRates.Services.Configuration;
 
 public class ConcapApi
 {

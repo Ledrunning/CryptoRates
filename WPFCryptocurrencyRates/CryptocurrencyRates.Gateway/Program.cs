@@ -1,67 +1,41 @@
-using System.Diagnostics;
-using CryptocurrencyRates.Gateway.Configuration;
+using CryptocurrencyRates.Gateway.Endpoints;
 using CryptocurrencyRates.Gateway.Extensions;
-using CryptocurrencyRates.Gateway.Helpers;
-using CryptocurrencyRates.Services.Contracts;
-using CryptocurrencyRates.Services.Services;
-using Microsoft.OpenApi.Models;
-using NLog;
-using NLog.Web;
+using CryptocurrencyRates.Gateway.Hubs;
 
-namespace CryptocurrencyRates.Gateway;
+const string WebCorsPolicy = "Web";
 
-internal static class Program
-{
-    public static void Main(string[] args)
-    {
-        const string loggerConfig = "NLog.config";
-        var logger = NLogBuilder.ConfigureNLog(loggerConfig).GetCurrentClassLogger();
+var builder = WebApplication.CreateBuilder(args);
 
-        try
-        {
-            var builder = WebApplication.CreateBuilder(args);
-            builder.ConfigureLogging();
+builder.Services.AddRates(builder.Configuration);
+builder.Services.AddSignalR();
+builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails();
 
-            var concapConfig = builder.Configuration.GetSection(ConcapApi.SectionName).Get<ConcapApi>();
+// Browser clients (Vue) need their origin allowed. SignalR also needs credentials,
+// which only works with an explicit origin list (not "*").
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+builder.Services.AddCors(options => options.AddPolicy(WebCorsPolicy, policy => policy
+    .WithOrigins(allowedOrigins)
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+    .AllowCredentials()));
 
-            if (concapConfig is { BaseUrl: { } })
-            {
-                builder.Services.AddTransient<ICryptoCurrencyRatesService>(x =>
-                    new CryptoCurrencyRatesService(logger, concapConfig.BaseUrl, concapConfig.Timeout));
-            }
+var app = builder.Build();
 
-            //Configure services
-            builder.Services.AddControllers();
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1",
-                    new OpenApiInfo
-                    {
-                        Title = "CryptocurrencyRates.Gateway", Version = $"{ProgramRuntime.ProgramFileVersion}"
-                    });
-            });
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
-            var app = builder.Build();
+app.RegisterScalar();
 
-            app.MapControllers();
-            app.UseRouting();
+app.UseCors(WebCorsPolicy);
 
-            app.Lifetime.RegisterApplicationLifetimeDelegates(logger);
+app.MapHub<RatesHub>("/hubs/rates");
+// app.MapHealthChecks("/health");
 
-            app.RegisterSwagger();
+app.MapRatesEndpoints();
+app.MapVersionEndpoints();
 
-            app.Run();
-        }
-        catch (Exception ex)
-        {
-            var name = typeof(Program).Assembly.GetName().Name;
-            Trace.Write(
-                $"[{DateTime.Now:HH:mm:ss.fff}] Application startup error [{name}]! Details {ex.Message}");
-            logger.Fatal(ex, $"Application startup error [{name}]");
-        }
-        finally
-        {
-            LogManager.Shutdown();
-        }
-    }
-}
+app.Run();
+
+// Makes the entry point visible to WebApplicationFactory in the test project.
+public partial class Program;
