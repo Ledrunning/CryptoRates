@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CryptocurrencyRates.Services\CryptocurrencyRates.Services.csproj" />
+    <ProjectReference Include="..\CryptoRates.Services\CryptoRates.Services.csproj" />
   </ItemGroup>
 
 </Project>
