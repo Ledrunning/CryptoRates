@@ -3,6 +3,22 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
-  // The gateway allows exactly this origin in Cors:AllowedOrigins.
-  server: { port: 5173, strictPort: true },
+  server: {
+    port: 5173,
+    proxy: {
+      // We proxy SignalR hubs (make sure to set `ws: true` for WebSockets!)
+      '/hubs': {
+        target: 'https://localhost:7208',
+        changeOrigin: true,
+        secure: false, // Ignores a self-signed .NET SSL certificate
+        ws: true       
+      },
+      // If you have a REST API at the path /api, include that here as well
+      '/api': {
+        target: 'https://localhost:7208',
+        changeOrigin: true,
+        secure: false
+      }
+    }
+  }
 })
