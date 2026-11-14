@@ -1,6 +1,7 @@
 ﻿using CryptocurrencyRates.Gateway.Models;
 using CryptocurrencyRates.Services.Models;
 using CryptocurrencyRates.Services.Services;
+using CryptoRates.Gateway.DependencyInjection;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace CryptoRates.Gateway.Endpoints
@@ -9,7 +10,9 @@ namespace CryptoRates.Gateway.Endpoints
     {
         public static IEndpointRouteBuilder MapRatesEndpoints(this IEndpointRouteBuilder app)
         {
-            var group = app.MapGroup("/api/v1/rates").WithTags("Rates");
+            var group = app.MapGroup("/api/v1/rates")
+                .WithTags("Rates")
+                .RequireRateLimiting(RateLimitingExtensions.RestPolicy); 
 
             group.MapGet("/", GetAll)
                 .WithSummary("Latest rates for all tracked coins");
