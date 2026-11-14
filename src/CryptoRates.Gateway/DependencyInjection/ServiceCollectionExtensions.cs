@@ -37,10 +37,4 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
-
-    private static Uri WithTrailingSlash(Uri uri)
-    {
-        var text = uri.AbsoluteUri;
-        return text.EndsWith('/') ? uri : new Uri(text + "/");
-    }
 }
