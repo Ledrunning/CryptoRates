@@ -6,10 +6,10 @@ const string WebCorsPolicy = "Web";
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddErrorHandling();
 builder.Services.AddRates(builder.Configuration);
 builder.Services.AddSignalR();
 builder.Services.AddOpenApi();
-builder.Services.AddProblemDetails();
 
 // Browser clients (Vue) need their origin allowed. SignalR also needs credentials,
 // which only works with an explicit origin list (not "*").
@@ -30,7 +30,6 @@ app.RegisterScalar();
 app.UseCors(WebCorsPolicy);
 
 app.MapHub<RatesHub>("/hubs/rates");
-// app.MapHealthChecks("/health");
 
 app.MapRatesEndpoints();
 app.MapVersionEndpoints();
