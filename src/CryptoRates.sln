@@ -11,6 +11,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CryptoRates.Services", "Cry
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CryptoRates.Common", "CryptoRates.Common\CryptoRates.Common.csproj", "{FB0528CF-C9C7-45A7-8722-8A78E54FF633}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CryptoRates.Services.Tests", "CryptoRates.Services.Tests\CryptoRates.Services.Tests.csproj", "{A1122B3C-4D4E-5F6A-7B8C-9D0E1F2A3B4C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CryptoRates.Gateway.Tests", "CryptoRates.Gateway.Tests\CryptoRates.Gateway.Tests.csproj", "{B2233C4D-5E5F-6A6B-7C8D-9E0F1A2B3C4D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CryptoRates.Client.Tests", "CryptoRates.Client.Tests\CryptoRates.Client.Tests.csproj", "{C3344D5E-6F6F-7A7B-8C8D-9E0F1A2B3C4D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +39,18 @@ Global
 		{FB0528CF-C9C7-45A7-8722-8A78E54FF633}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB0528CF-C9C7-45A7-8722-8A78E54FF633}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB0528CF-C9C7-45A7-8722-8A78E54FF633}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1122B3C-4D4E-5F6A-7B8C-9D0E1F2A3B4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1122B3C-4D4E-5F6A-7B8C-9D0E1F2A3B4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1122B3C-4D4E-5F6A-7B8C-9D0E1F2A3B4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1122B3C-4D4E-5F6A-7B8C-9D0E1F2A3B4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2233C4D-5E5F-6A6B-7C8D-9E0F1A2B3C4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2233C4D-5E5F-6A6B-7C8D-9E0F1A2B3C4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2233C4D-5E5F-6A6B-7C8D-9E0F1A2B3C4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2233C4D-5E5F-6A6B-7C8D-9E0F1A2B3C4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3344D5E-6F6F-7A7B-8C8D-9E0F1A2B3C4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3344D5E-6F6F-7A7B-8C8D-9E0F1A2B3C4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3344D5E-6F6F-7A7B-8C8D-9E0F1A2B3C4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3344D5E-6F6F-7A7B-8C8D-9E0F1A2B3C4D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
