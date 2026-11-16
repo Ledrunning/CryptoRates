@@ -11,9 +11,11 @@ public sealed class RatesOptionsValidator : IValidateOptions<RatesOptions>
     {
         var failures = new List<string>();
 
-        if (!Uri.TryCreate(o.BaseUrl, UriKind.Absolute, out _) || !o.BaseUrl.EndsWith('/'))
+        if (!Uri.TryCreate(o.BaseUrl, UriKind.Absolute, out var uri) ||
+            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps) ||
+            !o.BaseUrl.EndsWith('/'))
         {
-            failures.Add("Rates:BaseUrl must be an absolute URL ending with '/'.");
+            failures.Add("Rates:BaseUrl must be an absolute HTTP or HTTPS URL ending with '/'.");
         }
 
         if (o.PollInterval < TimeSpan.FromSeconds(30))
