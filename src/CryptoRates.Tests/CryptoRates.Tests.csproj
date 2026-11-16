@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.12.0" />
     <PackageReference Include="xunit">
       <Version>2.9.3</Version>
     </PackageReference>
@@ -29,7 +30,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CryptoRates.Gateway\CryptoRates.Gateway.csproj" />
     <ProjectReference Include="..\CryptoRates.Services\CryptoRates.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\" />
+    <Folder Include="Gateway\" />
   </ItemGroup>
 
 </Project>
