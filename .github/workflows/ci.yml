@@ -20,6 +20,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Debug Workspace Structure
+        run: |
+          echo "=== Current Directory ==="
+          pwd
+          echo "=== Contents of src/ ==="
+          ls -la src/ || true
+          echo "=== Contents of src/CryptoRates.Tests/ ==="
+          ls -la src/CryptoRates.Tests/ || true
+
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
