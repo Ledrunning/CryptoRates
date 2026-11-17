@@ -1,0 +1,35 @@
+name: desktop
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'src/CryptoRates.Client/**'
+      - 'src/CryptoRates.Common/**'
+      - '.github/workflows/desktop.yml'
+  pull_request:
+    branches: [master]
+    paths:
+      - 'src/CryptoRates.Client/**'
+      - 'src/CryptoRates.Common/**'
+      - '.github/workflows/desktop.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build
+        run: dotnet build src/CryptoRates.Client/CryptoRates.Client.csproj -c Release
