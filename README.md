@@ -1,5 +1,12 @@
 # CryptoRates
 
+[![Build](https://github.com/Ledrunning/CryptoRates/actions/workflows/gateway.yml/badge.svg)](https://github.com/Ledrunning/CryptoRates/actions/workflows/gateway.yml)
+[![Build](https://github.com/Ledrunning/CryptoRates/actions/workflows/desktop.yml/badge.svg)](https://github.com/Ledrunning/CryptoRates/actions/workflows/desktop.yml)
+[![Build](https://github.com/Ledrunning/CryptoRates/actions/workflows/web.yml/badge.svg)](https://github.com/Ledrunning/CryptoRates/actions/workflows/web.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com)
+[![.NET](https://img.shields.io/badge/vuejs-blue.svg)](https://vuejs.org/)
+
 **Work in progress.** The gateway and the WPF client already work; tests, Docker, CI and the web client are still on the way.
 
 A small real-time crypto price dashboard: one gateway talks to the market data provider, clients only talk to the gateway.
@@ -40,10 +47,7 @@ The poll interval defaults to 10 minutes to stay inside the free Demo quota (10,
 
 ## Roadmap
 
-- [ ] Unit and integration tests
 - [ ] Dockerfile and docker-compose for the gateway
-- [ ] GitHub Actions CI
-- [ ] Vue 3 web client
 - [ ] Screenshots / GIFs
 
 ## Credits
